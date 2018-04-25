@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import tensorflow as tf
 import numpy as np
 import os, argparse, time, random
@@ -110,7 +112,7 @@ elif args.mode == 'demo':
         saver.restore(sess, ckpt_file)
         while(1):
             print('Please input your sentence:')
-            demo_sent = input()
+            demo_sent = raw_input().decode('utf-8')
             if demo_sent == '' or demo_sent.isspace():
                 print('See you next time!')
                 break
@@ -120,3 +122,8 @@ elif args.mode == 'demo':
                 tag = model.demo_one(sess, demo_data)
                 PER, LOC, ORG = get_entity(tag, demo_sent)
                 print('PER: {}\nLOC: {}\nORG: {}'.format(PER, LOC, ORG))
+                print(u'\nPER: {}\nLOC: {}\nORG: {}'.format(
+                    u' '.join(PER),
+                    u' '.join(LOC),
+                    u' '.join(ORG)))
+                import ipdb; ipdb.set_trace()
