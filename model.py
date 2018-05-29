@@ -160,7 +160,9 @@ class BiLSTM_CRF(object):
             self.add_summary(sess)
 
             for epoch in range(self.epoch_num):
-                self.run_one_epoch(sess, train, dev, self.tag2label, epoch, saver, builder)
+                self.run_one_epoch(sess, train, dev, self.tag2label, epoch, saver)
+
+            self.save_saved_model(builder, sess)
 
     def test(self, test):
         saver = tf.train.Saver()
@@ -187,7 +189,7 @@ class BiLSTM_CRF(object):
         tag = [label2tag[label] for label in label_list[0]]
         return tag
 
-    def run_one_epoch(self, sess, train, dev, tag2label, epoch, saver, builder):
+    def run_one_epoch(self, sess, train, dev, tag2label, epoch, saver):
         """
 
         :param sess:
@@ -218,8 +220,6 @@ class BiLSTM_CRF(object):
 
             if step + 1 == num_batches:
                 saver.save(sess, self.model_path, global_step=step_num)
-
-                self.save_saved_model(builder, sess)
 
         self.logger.info('===========validation / test===========')
         label_list_dev, seq_len_list_dev = self.dev_one_epoch(sess, dev)
