@@ -16,14 +16,18 @@ def read_corpus(corpus_path):
     :return: data
     """
     data = []
-    with open(corpus_path, encoding='utf-8') as fr:
+    # with open(corpus_path, encoding='utf-8') as fr:
+    with open(corpus_path) as fr:
         lines = fr.readlines()
     sent_, tag_ = [], []
     for line in lines:
         if line != '\n':
-            [char, label] = line.strip().split()
-            sent_.append(char)
-            tag_.append(label)
+            try:
+                [char, label] = line.strip().split()
+            except:
+                continue
+            sent_.append(char.decode('utf8'))
+            tag_.append(label.decode('utf8'))
         else:
             data.append((sent_, tag_))
             sent_, tag_ = [], []

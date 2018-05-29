@@ -26,6 +26,7 @@ class BiLSTM_CRF(object):
         self.vocab = vocab
         self.shuffle = args.shuffle
         self.model_path = paths['model_path']
+        self.saved_model_path = paths['saved_model_path']
         self.summary_path = paths['summary_path']
         self.logger = get_logger(paths['log_path'])
         self.result_path = paths['result_path']
@@ -217,6 +218,8 @@ class BiLSTM_CRF(object):
             if step + 1 == num_batches:
                 saver.save(sess, self.model_path, global_step=step_num)
 
+                self.save_saved_model(sess)
+
         self.logger.info('===========validation / test===========')
         label_list_dev, seq_len_list_dev = self.dev_one_epoch(sess, dev)
         self.evaluate(label_list_dev, seq_len_list_dev, dev, epoch)
@@ -311,3 +314,20 @@ class BiLSTM_CRF(object):
         for _ in conlleval(model_predict, label_path, metric_path):
             self.logger.info(_)
 
+    def save_saved_model(self, sess):
+        builder = tf.saved_model.builder.SavedModelBuilder(self.saved_model_path)
+        prediction_signature = (
+            tf.saved_model.signature_def_utils.build_signature_def(
+                inputs={'word_ids': self.word_ids, 'sequence_lengths': self.sequence_lengths},
+                outputs={'logits': self.logits, 'transition_params': self.transition_params},
+                method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME))
+        builder.add_meta_graph_and_variables(
+            sess, [tf.saved_model.tag_constants.SERVING],
+            signature_def_map={
+                # 'predict_seqs':
+                #     prediction_signature,
+                tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
+                    prediction_signature,
+            },
+            legacy_init_op=None)
+        builder.save()

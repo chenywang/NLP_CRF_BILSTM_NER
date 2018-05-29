@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
+
 import tensorflow as tf
 import numpy as np
 import os, argparse, time, random
@@ -66,6 +68,9 @@ model_path = os.path.join(output_path, "checkpoints/")
 if not os.path.exists(model_path): os.makedirs(model_path)
 ckpt_prefix = os.path.join(model_path, "model")
 paths['model_path'] = ckpt_prefix
+saved_model_path = os.path.join(output_path, "saved_model/")
+if not os.path.exists(saved_model_path): os.makedirs(saved_model_path)
+paths['saved_model_path'] = saved_model_path
 result_path = os.path.join(output_path, "results")
 paths['result_path'] = result_path
 if not os.path.exists(result_path): os.makedirs(result_path)
