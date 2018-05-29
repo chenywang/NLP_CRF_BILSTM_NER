@@ -316,16 +316,18 @@ class BiLSTM_CRF(object):
             self.logger.info(_)
 
     def save_saved_model(self, builder, sess):
+        word_ids = tf.saved_model.utils.build_tensor_info(self.word_ids)
+        sequence_lengths = tf.saved_model.utils.build_tensor_info(self.sequence_lengths)
+        logits = tf.saved_model.utils.build_tensor_info(self.logits)
+        transition_params = tf.saved_model.utils.build_tensor_info(self.transition_params)
         prediction_signature = (
             tf.saved_model.signature_def_utils.build_signature_def(
-                inputs={'word_ids': self.word_ids, 'sequence_lengths': self.sequence_lengths},
-                outputs={'logits': self.logits, 'transition_params': self.transition_params},
+                inputs={'word_ids': word_ids, 'sequence_lengths': sequence_lengths},
+                outputs={'logits': logits, 'transition_params': transition_params},
                 method_name=tf.saved_model.signature_constants.PREDICT_METHOD_NAME))
         builder.add_meta_graph_and_variables(
             sess, [tf.saved_model.tag_constants.SERVING],
             signature_def_map={
-                # 'predict_seqs':
-                #     prediction_signature,
                 tf.saved_model.signature_constants.DEFAULT_SERVING_SIGNATURE_DEF_KEY:
                     prediction_signature,
             },
