@@ -153,13 +153,14 @@ class BiLSTM_CRF(object):
         :return:
         """
         saver = tf.train.Saver(tf.global_variables())
+        builder = tf.saved_model.builder.SavedModelBuilder(self.saved_model_path)
 
         with tf.Session(config=self.config) as sess:
             sess.run(self.init_op)
             self.add_summary(sess)
 
             for epoch in range(self.epoch_num):
-                self.run_one_epoch(sess, train, dev, self.tag2label, epoch, saver)
+                self.run_one_epoch(sess, train, dev, self.tag2label, epoch, saver, builder)
 
     def test(self, test):
         saver = tf.train.Saver()
@@ -186,7 +187,7 @@ class BiLSTM_CRF(object):
         tag = [label2tag[label] for label in label_list[0]]
         return tag
 
-    def run_one_epoch(self, sess, train, dev, tag2label, epoch, saver):
+    def run_one_epoch(self, sess, train, dev, tag2label, epoch, saver, builder):
         """
 
         :param sess:
@@ -218,7 +219,7 @@ class BiLSTM_CRF(object):
             if step + 1 == num_batches:
                 saver.save(sess, self.model_path, global_step=step_num)
 
-                self.save_saved_model(sess)
+                self.save_saved_model(builder, sess)
 
         self.logger.info('===========validation / test===========')
         label_list_dev, seq_len_list_dev = self.dev_one_epoch(sess, dev)
@@ -314,8 +315,7 @@ class BiLSTM_CRF(object):
         for _ in conlleval(model_predict, label_path, metric_path):
             self.logger.info(_)
 
-    def save_saved_model(self, sess):
-        builder = tf.saved_model.builder.SavedModelBuilder(self.saved_model_path)
+    def save_saved_model(self, builder, sess):
         prediction_signature = (
             tf.saved_model.signature_def_utils.build_signature_def(
                 inputs={'word_ids': self.word_ids, 'sequence_lengths': self.sequence_lengths},
