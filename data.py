@@ -8,6 +8,10 @@ tag2label = {"O": 0,
              "B-ORG": 5, "I-ORG": 6
              }
 
+label2tag = {}
+for tag, label in tag2label.items():
+    label2tag[label] = tag if label != 0 else label
+
 
 def read_corpus(corpus_path):
     """
